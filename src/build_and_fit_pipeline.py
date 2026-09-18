@@ -48,23 +48,23 @@ def build_and_train_pipeline(
 	)
 	classifiers = {
 		"xgb": xgb.XGBClassifier(
-			colsample_bytree=0.8, subsample=1.0, n_estimators=100, max_depth=4,
+			colsample_bytree=0.8, subsample=1.0, n_estimators=100, max_depth=6,
 			learning_rate=0.2, gamma=None, reg_alpha=None, reg_lambda=1.5,
 			random_state=42, eval_metric="mlogloss",
 		),
 		"lightgbm": lgb.LGBMClassifier(
-			n_estimators=600, max_depth=-1, learning_rate=0.1, bagging_freq=0,
-			feature_fraction=1.0, num_leaves=63, reg_lambda=0.0, random_state=42,
+			n_estimators=600, max_depth=6, learning_rate=0.1, bagging_freq=0,
+			feature_fraction=1.0, num_leaves=31, reg_lambda=0.0, random_state=42,
 			objective="multiclass", metric="multi_logloss", verbosity=-1,
 		),
-		"logistic_regression": LogisticRegression(C=100, max_iter=1000, solver="newton-cg"),
+		"logistic_regression": LogisticRegression(C=100, class_weight="balanced", max_iter=1000, solver="lbfgs"),
 		"random_forest": RandomForestClassifier(
-			n_estimators=500, max_depth=20, bootstrap=False, class_weight=None,
-			max_features="sqrt", min_samples_leaf=1, min_samples_split=10,
+			n_estimators=200, max_depth=None, bootstrap=False, class_weight=None,
+			max_features="sqrt", min_samples_leaf=1, min_samples_split=2,
 			random_state=42, n_jobs=-1,
 		),
 		"svm": SVC(
-			kernel="linear", C=10, class_weight=None, gamma="scale",
+			kernel="linear", C=100, class_weight=None, gamma="scale",
 			probability=True, random_state=42,
 		),
 		"mlp": MLPClassifier(
@@ -93,7 +93,7 @@ def build_and_train_pipeline(
 				f"Allowed models are: {list(registry)}"
 			)
 		classifier = VotingClassifier(
-			estimators=[registry[name] for name in voting_models], voting="hard"
+			estimators=[registry[name] for name in voting_models], voting="soft"
 		)
 	elif ml_model in classifiers:
 		classifier = classifiers[ml_model]
